@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Gerenciador de Senhas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f5f6fa;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+    th {
+      background: #2c3e50;
+      color: white;
+    }
+    button {
+      padding: 6px 12px;
+      margin: 2px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .create-btn { background: #27ae60; color: white; }
+    .edit-btn   { background: #2980b9; color: white; }
+    .delete-btn { background: #c0392b; color: white; }
+    .toggle-btn { background: #7f8c8d; color: white; }
+    .logout-btn { background: #e67e22; color: white; }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <h1>🔐 Locker - Gerenciador de Senhas</h1>
+    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+  </div>
+  
+  <button class="create-btn" onclick="createEntry()">➕ Criar Novo</button>
+  
+  <table id="lockerTable">
+    <thead>
+      <tr>
+        <th>Site</th>
+        <th>Usuário</th>
+        <th>Senha</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Linhas vão ser inseridas dinamicamente -->
+    </tbody>
+  </table>
+
+  <script>
+    async function loadData() {
+      const res = await fetch("/home", { headers: { "Accept": "application/json" } });
+      const data = await res.json();
+      const tbody = document.querySelector("#lockerTable tbody");
+      tbody.innerHTML = "";
+      data.forEach((row, idx) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.site}</td>
+          <td>${row.user}</td>
+          <td>
+            <span id="pw-${idx}" data-password="${row.password}">••••••••</span>
+            <button class="toggle-btn" onclick="togglePassword('${idx}')">👁</button>
+          </td>
+          <td>
+            <button class="edit-btn" onclick="editEntry('${row.site}')">Editar</button>
+            <button class="delete-btn" onclick="deleteEntry('${row.site}')">Excluir</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function togglePassword(id) {
+      const span = document.getElementById("pw-" + id);
+      if (span.textContent === "••••••••") {
+        span.textContent = span.dataset.password;
+      } else {
+        span.textContent = "••••••••";
+      }
+    }
+
+    async function createEntry() {
+      const site = prompt("Digite o nome do site:");
+      const user = prompt("Digite o usuário:");
+      if (!site || !user) return;
+      const res = await fetch("/home", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ site, user })
+      });
+      const data = await res.json();
+      alert("Criado com sucesso!\nSenha gerada: " + data.password);
+      loadData();
+    }
+
+    async function editEntry(site) {
+      const user = prompt("Digite o novo usuário:");
+      if (!user) return;
+      const res = await fetch("/home", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ site, user })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("Atualizado com sucesso!\nNova senha: " + data.password);
+        loadData();
+      } else {
+        alert(data.error);
+      }
+    }
+
+    async function deleteEntry(site) {
+      if (!confirm("Deseja excluir o site " + site + "?")) return;
+      const res = await fetch("/home", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ site })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message);
+        loadData();
+      } else {
+        alert(data.error);
+      }
+    }
+
+    function logout() {
+      window.location.href = "/login";
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
