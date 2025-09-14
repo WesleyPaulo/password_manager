@@ -77,34 +77,56 @@
       const data = await res.json();
       const tbody = document.querySelector("#lockerTable tbody");
       tbody.innerHTML = "";
+
       data.forEach((row, idx) => {
+        const tr = document.createElement("tr");
+
+        // Coluna: site
+        const tdSite = document.createElement("td");
+        tdSite.textContent = row.site;
+        tr.appendChild(tdSite);
+
+        // Coluna: usuário
+        const tdUser = document.createElement("td");
+        tdUser.textContent = row.user;
+        tr.appendChild(tdUser);
+
+        // Coluna: senha + botão mostrar/ocultar
+        const tdSenha = document.createElement("td");
+
         const span = document.createElement("span");
         span.id = "pw-" + idx;
-        span.textContent = "••••••••";
-        span.dataset.password = row.password;  // ← aqui o navegador trata as aspas corretamente
+        span.textContent = "••••••••"; // senha escondida
+        span.dataset.password = row.password; // senha real
 
         const toggleBtn = document.createElement("button");
         toggleBtn.className = "toggle-btn";
         toggleBtn.textContent = "👁";
         toggleBtn.onclick = () => togglePassword(idx);
 
-        const tdSenha = document.createElement("td");
         tdSenha.appendChild(span);
         tdSenha.appendChild(toggleBtn);
+        tr.appendChild(tdSenha);
 
-        tr.appendChild(tdSenha)
+        // Coluna: ações
+        const tdAcoes = document.createElement("td");
 
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${row.site}</td>
-          <td>${row.user}</td>
-          <td>
-            <button class="edit-btn" onclick="editEntry('${row.site}')">Editar</button>
-            <button class="delete-btn" onclick="deleteEntry('${row.site}')">Excluir</button>
-          </td>
-        `;
+        const editBtn = document.createElement("button");
+        editBtn.className = "edit-btn";
+        editBtn.textContent = "Editar";
+        editBtn.onclick = () => editEntry(row.site);
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "delete-btn";
+        deleteBtn.textContent = "Excluir";
+        deleteBtn.onclick = () => deleteEntry(row.site);
+
+        tdAcoes.appendChild(editBtn);
+        tdAcoes.appendChild(deleteBtn);
+        tr.appendChild(tdAcoes);
+
         tbody.appendChild(tr);
-      });
+      });  
     }
 
     function togglePassword(id) {

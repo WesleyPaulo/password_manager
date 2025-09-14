@@ -56,10 +56,8 @@ def login():
             try:
                 ph.verify(usuario.senha_hash, senha)
                 csv_file = get_csv_filename(nome)
-                print(nome)
                 
-                
-                print(csv_file)
+            
                 session['user_csv'] = csv_file
                 
                 return redirect(url_for('home_page'))    
