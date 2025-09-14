@@ -78,14 +78,26 @@
       const tbody = document.querySelector("#lockerTable tbody");
       tbody.innerHTML = "";
       data.forEach((row, idx) => {
+        const span = document.createElement("span");
+        span.id = "pw-" + idx;
+        span.textContent = "••••••••";
+        span.dataset.password = row.password;  // ← aqui o navegador trata as aspas corretamente
+
+        const toggleBtn = document.createElement("button");
+        toggleBtn.className = "toggle-btn";
+        toggleBtn.textContent = "👁";
+        toggleBtn.onclick = () => togglePassword(idx);
+
+        const tdSenha = document.createElement("td");
+        tdSenha.appendChild(span);
+        tdSenha.appendChild(toggleBtn);
+
+        tr.appendChild(tdSenha)
+
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${row.site}</td>
           <td>${row.user}</td>
-          <td>
-            <span id="pw-${idx}" data-password="${row.password}">••••••••</span>
-            <button class="toggle-btn" onclick="togglePassword('${idx}')">👁</button>
-          </td>
           <td>
             <button class="edit-btn" onclick="editEntry('${row.site}')">Editar</button>
             <button class="delete-btn" onclick="deleteEntry('${row.site}')">Excluir</button>

@@ -30,9 +30,9 @@ with app.app_context():
     db.create_all()
     
 # ===================== UTILS =====================
-def get_csv_filename(senha_hash: str) -> str:
+def get_csv_filename(nome: str) -> str:
     """Gera nome seguro de CSV a partir do hash da senha"""
-    safe_hash = hashlib.sha256(senha_hash.encode()).hexdigest()
+    safe_hash = hashlib.sha256(nome.encode()).hexdigest()
     return f"locker_{safe_hash}.csv"
 
 def get_user_crud() -> Crud:
@@ -55,7 +55,8 @@ def login():
         if usuario:
             try:
                 ph.verify(usuario.senha_hash, senha)
-                csv_file = get_csv_filename(usuario.senha_hash)
+                csv_file = get_csv_filename(nome)
+                print(nome)
                 
                 
                 print(csv_file)
