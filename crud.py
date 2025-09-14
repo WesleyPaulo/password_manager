@@ -1,16 +1,25 @@
 import pandas as pd
+import os
 
 class Crud():
     
-    file = "/instances/locker.csv"
+    file = ""
     
-    def __init__(self) -> None:
-        with open(self.file, "w") as locker:
-            locker.write("site,user,password")
+    def __init__(self, file="locker.csv",base_dir="lockers") -> None:
+        # Cria a pasta se não existir
+        os.makedirs(base_dir, exist_ok=True)
+        
+        # Caminho completo para o arquivo
+        self.file = os.path.join(base_dir, file)
+        
+        if not os.path.exists(self.file):
+            with open(self.file, "w") as locker:
+                locker.write("site,user,password\n")
 
     def create(self, site, user, password):
-        with open(self.file, "a") as locker:
-            locker.write("\n" + site + "," + user + "," + password)
+        df = pd.read_csv(self.file)
+        df.loc[len(df)] = [site, user, password]
+        df.to_csv(self.file, index=False)
 
     def read(self, site):
         df = pd.read_csv(self.file)
@@ -35,4 +44,8 @@ class Crud():
             df.to_csv(self.file, index=False)
             return True
         return False
+    
+    def list_all(self):
+        df = pd.read_csv(self.file)
+        return df
         
