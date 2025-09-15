@@ -2,9 +2,11 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from argon2 import PasswordHasher
 from flask import jsonify
+from flask_session import Session
 import pandas as pd
 import hashlib
 import os
+import crypto
 
 from crud import Crud
 from gerador_senha import PasswordGenerator
@@ -59,6 +61,9 @@ def login():
                 
             
                 session['user_csv'] = csv_file
+                session['password'] = senha
+                full_path = os.path.join("lockers", csv_file)
+                crypto.decrypt_file(full_path, full_path, senha)
                 
                 return redirect(url_for('home_page'))    
             except:
@@ -83,6 +88,8 @@ def cadastro():
 
 @app.route('/logout')
 def logout():
+    full_path = os.path.join("lockers", session['user_csv'])
+    crypto.encrypt_file(full_path, full_path, session['password'])
     session.clear()
     return redirect(url_for('login'))
 
@@ -118,15 +125,27 @@ def create_senha():
 # UPDATE - gera nova senha automaticamente ao atualizar
 @app.route('/home', methods=['PUT'])
 def update_senha():
+    if 'user_csv' not in session:
+        return redirect(url_for('login'))
+
     data = request.get_json()
     site = data.get("site")
     new_user = data.get("user")
-    new_password = gen.generate_password()  # senha automática
-    
+    change_password = data.get("change_password", False)
+
+    new_password = None
+    if change_password:
+        new_password = gen.generate_password()
+
     crud = get_user_crud()
     success = crud.update(site, new_user=new_user, new_password=new_password)
     if success:
-        return jsonify({"message": "Registro atualizado com sucesso!", "site": site, "user": new_user, "password": new_password})
+        return jsonify({
+            "message": "Registro atualizado",
+            "site": site,
+            "user": new_user,
+            "password": new_password if new_password else "(inalterada)"
+        })
     return jsonify({"error": "Site não encontrado"}), 404
 
 # DELETE

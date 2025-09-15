@@ -5,7 +5,7 @@
   <title>Gerenciador de Senhas</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: "Segoe UI", Tahoma, sans-serif;
       margin: 20px;
       background: #f5f6fa;
     }
@@ -23,11 +23,13 @@
       border-collapse: collapse;
       margin-top: 20px;
       background: #fff;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
     }
     th, td {
       padding: 12px;
-      border: 1px solid #ddd;
+      border-bottom: 1px solid #eee;
       text-align: center;
     }
     th {
@@ -35,18 +37,115 @@
       color: white;
     }
     button {
-      padding: 6px 12px;
-      margin: 2px;
+      padding: 8px 14px;
+      margin: 4px;
       border: none;
-      border-radius: 4px;
+      border-radius: 6px;
       cursor: pointer;
       font-weight: bold;
+      transition: all 0.2s ease;
     }
     .create-btn { background: #27ae60; color: white; }
+    .create-btn:hover { background: #219150; }
     .edit-btn   { background: #2980b9; color: white; }
+    .edit-btn:hover   { background: #2471a3; }
     .delete-btn { background: #c0392b; color: white; }
+    .delete-btn:hover { background: #a93226; }
     .toggle-btn { background: #7f8c8d; color: white; }
+    .toggle-btn:hover { background: #626e70; }
     .logout-btn { background: #e67e22; color: white; }
+    .logout-btn:hover { background: #ca6f1e; }
+
+    /* ==== Modal ==== */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(3px);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: #fff;
+      padding: 25px;
+      border-radius: 14px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+      width: 380px;
+      text-align: center;
+      animation: slideDown 0.3s ease;
+    }
+    .modal-content h3 {
+      margin-top: 0;
+      color: #2c3e50;
+      margin-bottom: 15px;
+    }
+    .modal-content input[type="text"] {
+      width: 90%;
+      margin: 8px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      transition: border-color 0.2s;
+    }
+    .modal-content input[type="text"]:focus {
+      outline: none;
+      border-color: #2980b9;
+      box-shadow: 0 0 4px rgba(41, 128, 185, 0.4);
+    }
+    .close-btn {
+      background: #bdc3c7;
+      color: #2c3e50;
+    }
+    .close-btn:hover {
+      background: #95a5a6;
+    }
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 12px 0;
+      font-size: 14px;
+      color: #2c3e50;
+    }
+    .checkbox-group input {
+      transform: scale(1.2);
+      cursor: pointer;
+    }
+    @keyframes slideDown {
+      from { transform: translateY(-30px); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+
+    /* ==== Toast ==== */
+    #toast-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .toast {
+      background: #2c3e50;
+      color: white;
+      padding: 12px 18px;
+      border-radius: 8px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+      animation: fadeInOut 4s forwards;
+    }
+    .toast.success { background: #27ae60; }
+    .toast.error { background: #c0392b; }
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateX(50px); }
+      10% { opacity: 1; transform: translateX(0); }
+      90% { opacity: 1; transform: translateX(0); }
+      100% { opacity: 0; transform: translateX(50px); }
+    }
   </style>
 </head>
 <body>
@@ -55,8 +154,9 @@
     <button class="logout-btn" onclick="logout()">🚪 Logout</button>
   </div>
   
-  <button class="create-btn" onclick="createEntry()">➕ Criar Novo</button>
-  
+  <button class="create-btn" onclick="openModal('createModal')">➕ Criar Novo</button>
+
+  <!-- Tabela -->
   <table id="lockerTable">
     <thead>
       <tr>
@@ -66,12 +166,50 @@
         <th>Ações</th>
       </tr>
     </thead>
-    <tbody>
-      <!-- Linhas vão ser inseridas dinamicamente -->
-    </tbody>
+    <tbody></tbody>
   </table>
 
+  <!-- Modal Criar -->
+  <div id="createModal" class="modal">
+    <div class="modal-content">
+      <h3>➕ Adicionar novo site</h3>
+      <input type="text" id="createSite" placeholder="Site" required>
+      <input type="text" id="createUser" placeholder="Usuário" required>
+      <button class="create-btn" onclick="submitCreate()">Salvar</button>
+      <button class="close-btn" onclick="closeModal('createModal')">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- Modal Editar -->
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <h3>✏️ Editar site</h3>
+      <input type="text" id="editSite" placeholder="Site existente" required readonly>
+      <input type="text" id="editUser" placeholder="Novo usuário" required>
+      <div class="checkbox-group">
+        <input type="checkbox" id="editPasswordCheck">
+        <label for="editPasswordCheck">Gerar nova senha</label>
+      </div>
+      <button class="edit-btn" onclick="submitEdit()">Salvar</button>
+      <button class="close-btn" onclick="closeModal('editModal')">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toast-container"></div>
+
   <script>
+    let currentEditSite = null;
+
+    function showToast(message, type="success") {
+      const container = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+
     async function loadData() {
       const res = await fetch("/home", { headers: { "Accept": "application/json" } });
       const data = await res.json();
@@ -81,23 +219,19 @@
       data.forEach((row, idx) => {
         const tr = document.createElement("tr");
 
-        // Coluna: site
         const tdSite = document.createElement("td");
         tdSite.textContent = row.site;
         tr.appendChild(tdSite);
 
-        // Coluna: usuário
         const tdUser = document.createElement("td");
         tdUser.textContent = row.user;
         tr.appendChild(tdUser);
 
-        // Coluna: senha + botão mostrar/ocultar
         const tdSenha = document.createElement("td");
-
         const span = document.createElement("span");
         span.id = "pw-" + idx;
-        span.textContent = "••••••••"; // senha escondida
-        span.dataset.password = row.password; // senha real
+        span.textContent = "••••••••";
+        span.dataset.password = row.password;
 
         const toggleBtn = document.createElement("button");
         toggleBtn.className = "toggle-btn";
@@ -108,13 +242,12 @@
         tdSenha.appendChild(toggleBtn);
         tr.appendChild(tdSenha);
 
-        // Coluna: ações
         const tdAcoes = document.createElement("td");
 
         const editBtn = document.createElement("button");
         editBtn.className = "edit-btn";
         editBtn.textContent = "Editar";
-        editBtn.onclick = () => editEntry(row.site);
+        editBtn.onclick = () => openEditModal(row.site);
 
         const deleteBtn = document.createElement("button");
         deleteBtn.className = "delete-btn";
@@ -126,46 +259,73 @@
         tr.appendChild(tdAcoes);
 
         tbody.appendChild(tr);
-      });  
+      });
     }
 
     function togglePassword(id) {
       const span = document.getElementById("pw-" + id);
-      if (span.textContent === "••••••••") {
-        span.textContent = span.dataset.password;
-      } else {
-        span.textContent = "••••••••";
-      }
+      span.textContent = (span.textContent === "••••••••") 
+        ? span.dataset.password 
+        : "••••••••";
     }
 
-    async function createEntry() {
-      const site = prompt("Digite o nome do site:");
-      const user = prompt("Digite o usuário:");
+    function openModal(id) {
+      document.getElementById(id).style.display = "flex";
+    }
+    function closeModal(id) {
+      document.getElementById(id).style.display = "none";
+    }
+
+    // Criar
+    async function submitCreate() {
+      const site = document.getElementById("createSite").value;
+      const user = document.getElementById("createUser").value;
       if (!site || !user) return;
+
       const res = await fetch("/home", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ site, user })
       });
       const data = await res.json();
-      alert("Criado com sucesso!\nSenha gerada: " + data.password);
-      loadData();
+      if (res.ok) {
+        showToast("Criado com sucesso! Senha: " + data.password, "success");
+        closeModal('createModal');
+        loadData();
+      } else {
+        showToast("Erro ao criar", "error");
+      }
     }
 
-    async function editEntry(site) {
-      const user = prompt("Digite o novo usuário:");
-      if (!user) return;
+    // Editar
+    function openEditModal(site) {
+      currentEditSite = site;
+      document.getElementById("editSite").value = site;
+      document.getElementById("editUser").value = "";
+      document.getElementById("editPasswordCheck").checked = false;
+      openModal('editModal');
+    }
+
+    async function submitEdit() {
+      const site = currentEditSite;
+      const user = document.getElementById("editUser").value;
+      const changePassword = document.getElementById("editPasswordCheck").checked;
+      if (!site || !user) return;
+
       const res = await fetch("/home", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ site, user })
+        body: JSON.stringify({ site, user, change_password: changePassword })
       });
       const data = await res.json();
       if (res.ok) {
-        alert("Atualizado com sucesso!\nNova senha: " + data.password);
+        showToast("Atualizado com sucesso! " + 
+                  (changePassword ? "Nova senha: " + data.password : "Senha mantida"), 
+                  "success");
+        closeModal('editModal');
         loadData();
       } else {
-        alert(data.error);
+        showToast(data.error, "error");
       }
     }
 
@@ -178,10 +338,10 @@
       });
       const data = await res.json();
       if (res.ok) {
-        alert(data.message);
+        showToast(data.message, "success");
         loadData();
       } else {
-        alert(data.error);
+        showToast(data.error, "error");
       }
     }
 
