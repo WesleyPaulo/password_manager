@@ -2,202 +2,77 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Gerenciador de Senhas</title>
-  <style>
-    body {
-      font-family: "Segoe UI", Tahoma, sans-serif;
-      margin: 20px;
-      background: #f5f6fa;
-    }
-    h1 {
-      text-align: center;
-      color: #2c3e50;
-    }
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      background: #fff;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-    }
-    th, td {
-      padding: 12px;
-      border-bottom: 1px solid #eee;
-      text-align: center;
-    }
-    th {
-      background: #2c3e50;
-      color: white;
-    }
-    button {
-      padding: 8px 14px;
-      margin: 4px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: all 0.2s ease;
-    }
-    .create-btn { background: #27ae60; color: white; }
-    .create-btn:hover { background: #219150; }
-    .edit-btn   { background: #2980b9; color: white; }
-    .edit-btn:hover   { background: #2471a3; }
-    .delete-btn { background: #c0392b; color: white; }
-    .delete-btn:hover { background: #a93226; }
-    .toggle-btn { background: #7f8c8d; color: white; }
-    .toggle-btn:hover { background: #626e70; }
-    .logout-btn { background: #e67e22; color: white; }
-    .logout-btn:hover { background: #ca6f1e; }
-
-    /* ==== Modal ==== */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 999;
-      left: 0; top: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(3px);
-      justify-content: center;
-      align-items: center;
-    }
-    .modal-content {
-      background: #fff;
-      padding: 25px;
-      border-radius: 14px;
-      box-shadow: 0 6px 15px rgba(0,0,0,0.25);
-      width: 380px;
-      text-align: center;
-      animation: slideDown 0.3s ease;
-    }
-    .modal-content h3 {
-      margin-top: 0;
-      color: #2c3e50;
-      margin-bottom: 15px;
-    }
-    .modal-content input[type="text"] {
-      width: 90%;
-      margin: 8px 0;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      transition: border-color 0.2s;
-    }
-    .modal-content input[type="text"]:focus {
-      outline: none;
-      border-color: #2980b9;
-      box-shadow: 0 0 4px rgba(41, 128, 185, 0.4);
-    }
-    .close-btn {
-      background: #bdc3c7;
-      color: #2c3e50;
-    }
-    .close-btn:hover {
-      background: #95a5a6;
-    }
-    .checkbox-group {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin: 12px 0;
-      font-size: 14px;
-      color: #2c3e50;
-    }
-    .checkbox-group input {
-      transform: scale(1.2);
-      cursor: pointer;
-    }
-    @keyframes slideDown {
-      from { transform: translateY(-30px); opacity: 0; }
-      to   { transform: translateY(0); opacity: 1; }
-    }
-
-    /* ==== Toast ==== */
-    #toast-container {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 2000;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .toast {
-      background: #2c3e50;
-      color: white;
-      padding: 12px 18px;
-      border-radius: 8px;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.2);
-      animation: fadeInOut 4s forwards;
-    }
-    .toast.success { background: #27ae60; }
-    .toast.error { background: #c0392b; }
-    @keyframes fadeInOut {
-      0% { opacity: 0; transform: translateX(50px); }
-      10% { opacity: 1; transform: translateX(0); }
-      90% { opacity: 1; transform: translateX(0); }
-      100% { opacity: 0; transform: translateX(50px); }
-    }
-  </style>
+  <title>Locker - Gerenciador de Senhas</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <div class="top-bar">
-    <h1>🔐 Locker - Gerenciador de Senhas</h1>
-    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
-  </div>
-  
-  <button class="create-btn" onclick="openModal('createModal')">➕ Criar Novo</button>
-
-  <!-- Tabela -->
-  <table id="lockerTable">
-    <thead>
-      <tr>
-        <th>Site</th>
-        <th>Usuário</th>
-        <th>Senha</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <!-- Modal Criar -->
-  <div id="createModal" class="modal">
-    <div class="modal-content">
-      <h3>➕ Adicionar novo site</h3>
-      <input type="text" id="createSite" placeholder="Site" required>
-      <input type="text" id="createUser" placeholder="Usuário" required>
-      <button class="create-btn" onclick="submitCreate()">Salvar</button>
-      <button class="close-btn" onclick="closeModal('createModal')">Cancelar</button>
+  <div class="dashboard">
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <h1>🔐 Locker - Gerenciador de Senhas</h1>
+      <button class="logout-btn" onclick="logout()">🚪 Logout</button>
     </div>
-  </div>
 
-  <!-- Modal Editar -->
-  <div id="editModal" class="modal">
-    <div class="modal-content">
-      <h3>✏️ Editar site</h3>
-      <input type="text" id="editSite" placeholder="Site existente" required readonly>
-      <input type="text" id="editUser" placeholder="Novo usuário" required>
-      <div class="checkbox-group">
-        <input type="checkbox" id="editPasswordCheck">
-        <label for="editPasswordCheck">Gerar nova senha</label>
+    <!-- Botão Criar -->
+    <button class="create-btn" onclick="openModal('createModal')">➕ Criar Novo</button>
+
+    <!-- Tabela -->
+    <table id="lockerTable">
+      <thead>
+        <tr>
+          <th>Site</th>
+          <th>Usuário</th>
+          <th>Senha</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <!-- Modal Criar -->
+    <div id="createModal" class="modal">
+      <div class="modal-content">
+        <h3>➕ Adicionar novo site</h3>
+        <label for="createSite">Site</label>
+        <input type="text" id="createSite" placeholder="Ex: www.site.com" required>
+
+        <label for="createUser">Usuário</label>
+        <input type="text" id="createUser" placeholder="Nome de usuário" required>
+
+        <div class="btn-row">
+          <button class="create-btn" onclick="submitCreate()">Salvar</button>
+          <button class="close-btn" onclick="closeModal('createModal')">Cancelar</button>
+        </div>
       </div>
-      <button class="edit-btn" onclick="submitEdit()">Salvar</button>
-      <button class="close-btn" onclick="closeModal('editModal')">Cancelar</button>
+    </div>
+
+    <!-- Modal Editar -->
+    <div id="editModal" class="modal">
+      <div class="modal-content">
+        <h3>✏️ Editar site</h3>
+        <label for="editSite">Site</label>
+        <input type="text" id="editSite" readonly>
+
+        <label for="editUser">Novo usuário</label>
+        <input type="text" id="editUser" placeholder="Digite o novo usuário">
+
+        <div class="checkbox-group">
+          <input type="checkbox" id="editPasswordCheck">
+          <label for="editPasswordCheck">Gerar nova senha automaticamente</label>
+        </div>
+
+        <div class="btn-row">
+          <button class="edit-btn" onclick="submitEdit()">Salvar</button>
+          <button class="close-btn" onclick="closeModal('editModal')">Cancelar</button>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Toast container -->
   <div id="toast-container"></div>
 
+  <!-- Scripts -->
   <script>
     let currentEditSite = null;
 
@@ -219,44 +94,18 @@
       data.forEach((row, idx) => {
         const tr = document.createElement("tr");
 
-        const tdSite = document.createElement("td");
-        tdSite.textContent = row.site;
-        tr.appendChild(tdSite);
-
-        const tdUser = document.createElement("td");
-        tdUser.textContent = row.user;
-        tr.appendChild(tdUser);
-
-        const tdSenha = document.createElement("td");
-        const span = document.createElement("span");
-        span.id = "pw-" + idx;
-        span.textContent = "••••••••";
-        span.dataset.password = row.password;
-
-        const toggleBtn = document.createElement("button");
-        toggleBtn.className = "toggle-btn";
-        toggleBtn.textContent = "👁";
-        toggleBtn.onclick = () => togglePassword(idx);
-
-        tdSenha.appendChild(span);
-        tdSenha.appendChild(toggleBtn);
-        tr.appendChild(tdSenha);
-
-        const tdAcoes = document.createElement("td");
-
-        const editBtn = document.createElement("button");
-        editBtn.className = "edit-btn";
-        editBtn.textContent = "Editar";
-        editBtn.onclick = () => openEditModal(row.site);
-
-        const deleteBtn = document.createElement("button");
-        deleteBtn.className = "delete-btn";
-        deleteBtn.textContent = "Excluir";
-        deleteBtn.onclick = () => deleteEntry(row.site);
-
-        tdAcoes.appendChild(editBtn);
-        tdAcoes.appendChild(deleteBtn);
-        tr.appendChild(tdAcoes);
+        tr.innerHTML = `
+          <td>${row.site}</td>
+          <td>${row.user}</td>
+          <td>
+            <span id="pw-${idx}" data-password="${row.password}">••••••••</span>
+            <button class="toggle-btn" onclick="togglePassword(${idx})">👁</button>
+          </td>
+          <td>
+            <button class="edit-btn" onclick="openEditModal('${row.site}')">Editar</button>
+            <button class="delete-btn" onclick="deleteEntry('${row.site}')">Excluir</button>
+          </td>
+        `;
 
         tbody.appendChild(tr);
       });
@@ -276,7 +125,6 @@
       document.getElementById(id).style.display = "none";
     }
 
-    // Criar
     async function submitCreate() {
       const site = document.getElementById("createSite").value;
       const user = document.getElementById("createUser").value;
@@ -297,7 +145,6 @@
       }
     }
 
-    // Editar
     function openEditModal(site) {
       currentEditSite = site;
       document.getElementById("editSite").value = site;
