@@ -37,7 +37,7 @@
         <input type="text" id="createSite" placeholder="Ex: www.site.com" required>
 
         <label for="createUser">Usuário</label>
-        <input type="text" id="createUser" placeholder="Nome de usuário" required>
+        <input type="text" id="createUser" placeholder="Usuário (Deixe vazio para padrão)" required>
 
         <label for="createPassword">Senha</label>
         <input type="password" id="createPassword" placeholder="Deixe vazio para gerar" required>
@@ -64,7 +64,7 @@
         <input type="text" id="editSite" readonly>
 
         <label for="editUser">Novo usuário</label>
-        <input type="text" id="editUser" placeholder="Digite o novo usuário">
+        <input type="text" id="editUser" placeholder="Usuário (Deixe vazio para padrão)">
         
         <div id="editPasswordGroup">
           <label for="editUser">Nova Senha</label>
@@ -157,7 +157,7 @@
       const site = document.getElementById("createSite").value;
       const user = document.getElementById("createUser").value;
       const password = document.getElementById("createPassword").value;
-      if (!site || !user) return;
+      if (!site) return;
       
       if (password !== ""){
         analisarSenha(password);
@@ -193,7 +193,7 @@
       const user = document.getElementById("editUser").value;
       const password = document.getElementById("editPassword").value;
       const changePassword = document.getElementById("editPasswordCheck").checked;
-      if (!site || !user) return;
+      if (!site) return;
 
       if (password !== ""){
         analisarSenha(password);
