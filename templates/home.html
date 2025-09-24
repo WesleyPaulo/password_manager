@@ -39,6 +39,9 @@
         <label for="createUser">Usuário</label>
         <input type="text" id="createUser" placeholder="Nome de usuário" required>
 
+        <label for="createPassword">Senha</label>
+        <input type="password" id="createPassword" placeholder="Deixe vazio para gerar" required>
+
         <div class="btn-row">
           <button class="create-btn" onclick="submitCreate()">Salvar</button>
           <button class="close-btn" onclick="closeModal('createModal')">Cancelar</button>
@@ -55,10 +58,16 @@
 
         <label for="editUser">Novo usuário</label>
         <input type="text" id="editUser" placeholder="Digite o novo usuário">
+        
+        <div id="editPasswordGroup">
+          <label for="editUser">Nova Senha</label>
+          <input type="text" id="editPassword" placeholder="Deixe vazio para gerar">
+        </div>
+
 
         <div class="checkbox-group">
-          <input type="checkbox" id="editPasswordCheck">
-          <label for="editPasswordCheck">Gerar nova senha automaticamente</label>
+          <input type="checkbox" id="editPasswordCheck" onclick="togglePasswordField('editPasswordCheck')">
+          <label for="editPasswordCheck">Mudar senha</label>
         </div>
 
         <div class="btn-row">
@@ -75,6 +84,7 @@
   <!-- Scripts -->
   <script>
     let currentEditSite = null;
+    let currentUser = null;
 
     function showToast(message, type="success") {
       const container = document.getElementById("toast-container");
@@ -102,13 +112,24 @@
             <button class="toggle-btn" onclick="togglePassword(${idx})">👁</button>
           </td>
           <td>
-            <button class="edit-btn" onclick="openEditModal('${row.site}')">Editar</button>
+            <button class="edit-btn" onclick="openEditModal('${row.site}','${row.user}')">Editar</button>
             <button class="delete-btn" onclick="deleteEntry('${row.site}')">Excluir</button>
           </td>
         `;
 
         tbody.appendChild(tr);
       });
+    }
+
+    function togglePasswordField(id) { 
+      const check = document.getElementById(id);
+      const field = document.getElementById("editPasswordGroup");
+      if (check.checked){
+        field.style.visibility = "visible";
+      }
+      else {
+        field.style.visibility = "collapse";
+      };
     }
 
     function togglePassword(id) {
@@ -128,12 +149,13 @@
     async function submitCreate() {
       const site = document.getElementById("createSite").value;
       const user = document.getElementById("createUser").value;
+      const password = document.getElementById("createPassword").value;
       if (!site || !user) return;
 
       const res = await fetch("/home", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ site, user })
+        body: JSON.stringify({ site, user, password })
       });
       const data = await res.json();
       if (res.ok) {
@@ -145,10 +167,12 @@
       }
     }
 
-    function openEditModal(site) {
+    function openEditModal(site, user) {
       currentEditSite = site;
+      currentEditUser = user;
+      document.getElementById("editPasswordGroup").style.visibility = "hidden";
       document.getElementById("editSite").value = site;
-      document.getElementById("editUser").value = "";
+      document.getElementById("editUser").value = user;
       document.getElementById("editPasswordCheck").checked = false;
       openModal('editModal');
     }
@@ -156,13 +180,14 @@
     async function submitEdit() {
       const site = currentEditSite;
       const user = document.getElementById("editUser").value;
+      const password = document.getElementById("editPassword").value;
       const changePassword = document.getElementById("editPasswordCheck").checked;
       if (!site || !user) return;
 
       const res = await fetch("/home", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ site, user, change_password: changePassword })
+        body: JSON.stringify({ site, user, change_password: changePassword, password })
       });
       const data = await res.json();
       if (res.ok) {

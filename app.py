@@ -116,7 +116,9 @@ def create_senha():
     data = request.get_json()
     site = data.get("site")
     user = data.get("user")
-    password = gen.generate_password()  # senha automática
+    password = data.get("password")
+    if password == "":
+        password = gen.generate_password()  # senha automática
     
     crud = get_user_crud()
     crud.create(site, user, password)
@@ -132,10 +134,14 @@ def update_senha():
     site = data.get("site")
     new_user = data.get("user")
     change_password = data.get("change_password", False)
+    password = data.get("password")
 
     new_password = None
     if change_password:
-        new_password = gen.generate_password()
+        if password == "":
+            new_password = gen.generate_password()
+        else:
+            new_password = password
 
     crud = get_user_crud()
     success = crud.update(site, new_user=new_user, new_password=new_password)

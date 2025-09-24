@@ -216,6 +216,15 @@ tr:hover td {
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
+.modal-content input[type="password"] {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
 .modal-content input[type="text"]:focus {
   border-color: var(--primary);
   box-shadow: 0 0 6px rgba(25,118,210,0.3);
