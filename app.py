@@ -58,8 +58,8 @@ def login():
             try:
                 ph.verify(usuario.senha_hash, senha)
                 csv_file = get_csv_filename(nome)
-                
-            
+
+                session['user'] = nome
                 session['user_csv'] = csv_file
                 session['password'] = senha
                 full_path = os.path.join("lockers", csv_file)
@@ -117,6 +117,10 @@ def create_senha():
     site = data.get("site")
     user = data.get("user")
     password = data.get("password")
+
+    if user == "":
+        user = session["user"]
+
     if password == "":
         password = gen.generate_password()  # senha automática
     
@@ -135,6 +139,9 @@ def update_senha():
     new_user = data.get("user")
     change_password = data.get("change_password", False)
     password = data.get("password")
+
+    if new_user == "":
+        new_user = session["user"]
 
     new_password = None
     if change_password:
