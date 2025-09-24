@@ -120,6 +120,19 @@ button {
   transition: all 0.2s ease;
 }
 
+.textoSenha {
+  font-size: 12px;
+  color:gray;
+
+}
+
+.textoSenhaBold {
+  font-size: 12px;
+  color:gray;
+  font-weight: bold;
+}
+
+
 .create-btn { background: var(--secondary); color: white; }
 .create-btn:hover { background: #219150; }
 

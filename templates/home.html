@@ -41,6 +41,13 @@
 
         <label for="createPassword">Senha</label>
         <input type="password" id="createPassword" placeholder="Deixe vazio para gerar" required>
+        <br>
+        <p class="textoSenhaBold">Uma Senha Forte Possui:</p>
+        <p class="textoSenha">12 Ou Mais Caracteres</p>
+        <p class="textoSenha">Ao Menos Uma Letra Maiúscula</p>
+        <p class="textoSenha">Ao Menos Uma Letra Minúscula</p>
+        <p class="textoSenha">Ao Menos Um Caractere Especial</p>
+        <br>
 
         <div class="btn-row">
           <button class="create-btn" onclick="submitCreate()">Salvar</button>
@@ -151,6 +158,10 @@
       const user = document.getElementById("createUser").value;
       const password = document.getElementById("createPassword").value;
       if (!site || !user) return;
+      
+      if (password !== ""){
+        analisarSenha(password);
+      }
 
       const res = await fetch("/home", {
         method: "POST",
@@ -183,6 +194,10 @@
       const password = document.getElementById("editPassword").value;
       const changePassword = document.getElementById("editPasswordCheck").checked;
       if (!site || !user) return;
+
+      if (password !== ""){
+        analisarSenha(password);
+      }
 
       const res = await fetch("/home", {
         method: "PUT",
@@ -222,6 +237,43 @@
     }
 
     loadData();
+
+    function analisarSenha(senha) {
+
+      tamanho = senha.length;
+      stringMaiscula = senha !== senha.toLowerCase();
+      stringMinuscula = senha === senha.toLowerCase();
+      stringNumero = /\d/.test(senha);
+      stringSpecialChar = /[^a-zA-Z0-9]/.test(senha);
+      criterio = 0
+
+      if (tamanho >= 12){
+        criterio+=1;
+      } 
+      if (stringMaiscula === true) {
+        criterio+=1;
+      }
+      if (stringMinuscula === false) {
+        criterio+=1;
+      }
+      if (stringNumero === true) {
+        criterio+=1;
+      }
+      if (stringSpecialChar === true) {
+        criterio+=1;
+      }
+
+      if (criterio === 5) {
+        showToast("Sua senha é forte!", "success");
+      }
+      else {
+        showToast("Sua senha não é forte", "warning");
+      }
+
+
+
+
+    }
   </script>
 </body>
 </html>
